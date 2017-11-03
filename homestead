@@ -1,0 +1,10 @@
+# copy into ~/.bashrc
+# edit paths where needed
+
+function homestead() {
+    if [ $* = "code" ]; then
+        cd ~/Projects/php/HomesteadCode
+    else
+        ( cd ~/Homestead && vagrant $* )
+    fi
+}
