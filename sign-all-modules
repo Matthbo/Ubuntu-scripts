@@ -1,0 +1,30 @@
+#!/bin/bash
+
+genNewKey=false
+
+echo "Do you wish to install generate a new key pair?"
+select yn in "Yes" "No"; do
+    case $yn in
+        Yes ) genNewKey=true; break;;
+        No ) break;;
+    esac
+done
+
+sudo mkdir -p /var/mok-key
+cd /var/mok-key
+
+if [ $genNewKey = true ]; then
+    sudo openssl req -new -x509 -newkey rsa:2048 -keyout MOK.priv -outform DER -out MOK.der -nodes -days 36500 -subj "/CN=MySelf/"
+fi
+
+for filename in /lib/modules/$(uname -r)/updates/dkms/*.ko; do
+	sudo /usr/src/linux-headers-$(uname -r)/scripts/sign-file sha256 ./MOK.priv ./MOK.der $filename
+	
+	echo "- Signed $filename"
+done
+
+echo "Enter password for MOK"
+sudo mokutil --import MOK.der
+
+echo "Please reboot"
+cd ~
